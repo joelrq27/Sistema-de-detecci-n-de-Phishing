@@ -1,4 +1,3 @@
-from typing import Dict, List
 from services.detector_contenido import DetectorContenido
 
 class MotorEvaluacion:
@@ -15,13 +14,10 @@ class MotorEvaluacion:
             'sospechoso_max': 5
         }
     
-    def analizar_mensaje(self, texto: str) -> Dict:
+    def analizar_mensaje(self, texto):
         """
         Funcion principal que analiza un mensaje completo
         
-        Args:
-            texto: str - El mensaje a analizar
-            
         Returns:
             Dict con:
             - risk_level: str - 'Seguro', 'Sospechoso', 'Peligroso'
@@ -29,17 +25,15 @@ class MotorEvaluacion:
             - score: int - Puntuación total
             - links_detected: List[str] - URLs encontradas (vacío por ahora)
         """
-        # Análisis de contenido usando el detector especializado
         resultado_contenido = self.detector_contenido.analizar(texto)
         
-        # Obtener score total del análisis
         score = resultado_contenido['score_total']
         
-        # Determinar nivel de riesgo según tabla de clasificación
         risk_level = self._determinar_nivel_riesgo(score)
         
-        # Preparar elementos detectados con formato estandarizado
-        detected_elements = self._formatear_elementos(resultado_contenido['elementos_detectados'])
+        detected_elements = self._formatear_elementos(
+            resultado_contenido['elementos_detectados']
+        )
         
         links_detected = []
         
@@ -50,15 +44,9 @@ class MotorEvaluacion:
             'links_detected': links_detected
         }
     
-    def _determinar_nivel_riesgo(self, score: int) -> str:
+    def _determinar_nivel_riesgo(self, score):
         """
         Determina el nivel de riesgo basado en el score
-        
-        Args:
-            score: int - Puntuación total
-            
-        Returns:
-            str - Nivel de riesgo
         """
         if score <= self.umbrales['seguro_max']:
             return 'Seguro'
@@ -67,15 +55,9 @@ class MotorEvaluacion:
         else:
             return 'Peligroso'
     
-    def _formatear_elementos(self, elementos: List[Dict]) -> List[Dict]:
+    def _formatear_elementos(self, elementos):
         """
         Formatea los elementos detectados para salida estandarizada
-        
-        Args:
-            elementos: List[Dict] - Elementos detectados por detectores
-            
-        Returns:
-            List[Dict] - Elementos formateados
         """
         elementos_formateados = []
         
@@ -89,15 +71,9 @@ class MotorEvaluacion:
         
         return elementos_formateados
     
-    def _generar_descripcion(self, elemento: Dict) -> str:
+    def _generar_descripcion(self, elemento):
         """
         Genera una descripción legible para cada elemento detectado
-        
-        Args:
-            elemento: Dict - Elemento detectado
-            
-        Returns:
-            str - Descripción del elemento
         """
         categoria = elemento['categoria']
         elemento_texto = elemento['elemento']
@@ -110,17 +86,14 @@ class MotorEvaluacion:
             'formato': f"Problema de formato detectado: '{elemento_texto}'"
         }
         
-        return descripciones.get(categoria, f"Elemento sospechoso: '{elemento_texto}'")
+        return descripciones.get(
+            categoria,
+            f"Elemento sospechoso: '{elemento_texto}'"
+        )
     
-    def obtener_resumen_categorias(self, elementos: List[Dict]) -> Dict[str, int]:
+    def obtener_resumen_categorias(self, elementos):
         """
         Obtiene un resumen de cuántos elementos hay por categoría
-        
-        Args:
-            elementos: List[Dict] - Elementos detectados
-            
-        Returns:
-            Dict[str, int] - Conteo por categoría
         """
         resumen = {}
         
