@@ -1,6 +1,4 @@
-import re
-from typing import Dict,List,Set
-from abc import ABC,abstractmethod
+from abc import ABC, abstractmethod
 
 class BaseDetector(ABC):
     """Clase base para todos los detectores """
@@ -11,15 +9,15 @@ class BaseDetector(ABC):
         self.categoria = ""
     
     @abstractmethod
-    def detectar(self, texto: str) -> List[str]:
+    def detectar(self, texto):
         """Método abstracto para detectar elementos """
         pass
     
-    def _limpiar_texto(self, texto: str) -> str:
+    def _limpiar_texto(self, texto):
         """Método protegido para normalizar texto"""
         return texto.lower().strip()
     
-    def _encontrar_palabras(self, texto: str) -> List[str]:
+    def _encontrar_palabras(self, texto):
         """Método protegido para encontrar palabras clave"""
         texto_limpio = self._limpiar_texto(texto)
         encontradas = []
@@ -43,8 +41,7 @@ class DetectorUrgencia(BaseDetector):
         self.peso = 2
         self.categoria = "urgencia"
     
-    def detectar(self, texto: str) -> List[str]:
-        """Implementación del método abstracto """
+    def detectar(self, texto):
         return self._encontrar_palabras(texto)
 
 class DetectorAccionObligatoria(BaseDetector):
@@ -60,8 +57,7 @@ class DetectorAccionObligatoria(BaseDetector):
         self.peso = 2
         self.categoria = "accion_obligatoria"
     
-    def detectar(self, texto: str) -> List[str]:
-        """Implementación del método abstracto"""
+    def detectar(self, texto):
         return self._encontrar_palabras(texto)
 
 class DetectorIncentivo(BaseDetector):
@@ -77,8 +73,7 @@ class DetectorIncentivo(BaseDetector):
         self.peso = 2
         self.categoria = "incentivo"
     
-    def detectar(self, texto: str) -> List[str]:
-        """Implementación del método abstracto"""
+    def detectar(self, texto):
         return self._encontrar_palabras(texto)
 
 class DetectorAmenaza(BaseDetector):
@@ -91,11 +86,10 @@ class DetectorAmenaza(BaseDetector):
             'cerraremos', 'perderás', 'suspendido', 'bloqueado', 'eliminado',
             'cuenta eliminada', 'servicio suspendido', 'acceso denegado'
         ]
-        self.peso=3
-        self.categoria="amenaza"
+        self.peso = 3
+        self.categoria = "amenaza"
     
-    def detectar(self, texto: str) -> List[str]:
-        """Implementación del método abstracto"""
+    def detectar(self, texto):
         return self._encontrar_palabras(texto)
 
 class DetectorFormato:
@@ -104,11 +98,10 @@ class DetectorFormato:
     def __init__(self):
         self.peso_mayusculas = 1
         self.peso_exclamaciones = 1
-        self.umbral_mayusculas = 0.3  # 30% de mayúsculas
-        self.umbral_exclamaciones = 3   # más de 3 signos
+        self.umbral_mayusculas = 0.3
+        self.umbral_exclamaciones = 3
     
-    def detectar_exceso_mayusculas(self, texto: str) -> bool:
-        """Detecta si hay exceso de mayúsculas"""
+    def detectar_exceso_mayusculas(self, texto):
         mayusculas = sum(1 for c in texto if c.isupper())
         minusculas = sum(1 for c in texto if c.islower())
         total_letras = mayusculas + minusculas
@@ -119,15 +112,13 @@ class DetectorFormato:
         porcentaje = (mayusculas / total_letras)
         return porcentaje > self.umbral_mayusculas
     
-    def detectar_exceso_exclamaciones(self, texto: str) -> bool:
-        """Detecta si hay múltiples signos de exclamación"""
+    def detectar_exceso_exclamaciones(self, texto):
         return texto.count('!') > self.umbral_exclamaciones
 
 class DetectorContenido:
     """Clase principal que coordina todos los detectores"""
     
     def __init__(self):
-        # Inicializar todos los detectores 
         self.detectores = [
             DetectorUrgencia(),
             DetectorAccionObligatoria(),
@@ -137,21 +128,11 @@ class DetectorContenido:
         
         self.detector_formato = DetectorFormato()
     
-    def analizar(self, texto: str) -> Dict:
-        """
-        Analiza el texto y devuelve resultados estructurados
-        
-        Returns:
-            Dict con:
-            - score_total: int
-            - elementos_detectados: List[Dict]
-            - categorias_activadas: List[str]
-        """
+    def analizar(self, texto):
         score_total = 0
         elementos_detectados = []
         categorias_activadas = []
         
-        # Analizar con cada detector 
         for detector in self.detectores:
             elementos = detector.detectar(texto)
             
@@ -169,7 +150,6 @@ class DetectorContenido:
                     for elemento in elementos
                 ])
         
-        # Detectar problemas de formato
         if self.detector_formato.detectar_exceso_mayusculas(texto):
             score_total += self.detector_formato.peso_mayusculas
             elementos_detectados.append({
