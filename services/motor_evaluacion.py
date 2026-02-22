@@ -1,5 +1,6 @@
 from services.detector_contenido import DetectorContenido
 from services.detector_dominio import URLAnalyzer, FinancialDomainChecker
+from services.detector_url import extraer_urls, es_url_valida, es_url_acortada
 from urllib.parse import urlparse
 
 class MotorEvaluacion:
@@ -137,10 +138,8 @@ class MotorEvaluacion:
         Returns:
             Dict con urls, score_urls y elementos_urls
         """
-        analyzer = URLAnalyzer(texto)
-        resultado = analyzer.analizar()
-        
-        urls = resultado['urls']
+        # Usar funciones del módulo detector_url
+        urls = extraer_urls(texto)
         score_urls = 0
         elementos_urls = []
         
@@ -155,24 +154,26 @@ class MotorEvaluacion:
             })
         
         # +2 por cada URL inválida
-        for url_invalida in resultado['urls_invalidas']:
-            score_urls += 2
-            elementos_urls.append({
-                'tipo': 'url',
-                'elemento': 'url_invalida',
-                'peso': 2,
-                'descripcion': f'URL inválida detectada: {url_invalida}'
-            })
+        for url in urls:
+            if not es_url_valida(url):
+                score_urls += 2
+                elementos_urls.append({
+                    'tipo': 'url',
+                    'elemento': 'url_invalida',
+                    'peso': 2,
+                    'descripcion': f'URL inválida detectada: {url}'
+                })
         
         # +2 por cada URL acortada
-        for url_acortada in resultado['urls_acortadas']:
-            score_urls += 2
-            elementos_urls.append({
-                'tipo': 'url',
-                'elemento': 'url_acortada',
-                'peso': 2,
-                'descripcion': f'URL acortada sospechosa: {url_acortada}'
-            })
+        for url in urls:
+            if es_url_acortada(url):
+                score_urls += 2
+                elementos_urls.append({
+                    'tipo': 'url',
+                    'elemento': 'url_acortada',
+                    'peso': 2,
+                    'descripcion': f'URL acortada sospechosa: {url}'
+                })
         
         return {
             'urls': urls,
