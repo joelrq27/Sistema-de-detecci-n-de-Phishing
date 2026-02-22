@@ -71,7 +71,7 @@ class FinancialDomainChecker:
             "viabcp.com",
             "interbank.pe",
             "bbva.pe",
-            "scotiabank.com",
+            "scotiabank.com.pe",
             "bancom.pe",
             "banbif.com.pe",
             "mibanco.com.pe",
@@ -89,6 +89,50 @@ class FinancialDomainChecker:
         Convierte los dominios a URLs HTTPS.
         """
         return "\n".join([f"https://{dominio}" for dominio in self.dominios_financieros_peru])
+    
+    def es_dominio_financiero_oficial(self, dominio: str) -> bool:
+        """
+         Devuelve True si el dominio coincide exactamente
+         o es un subdominio legítimo de un dominio financiero oficial.
+        """
+        dominio_normalizado = dominio.lower().strip()
+
+        for oficial in self.dominios_financieros_peru:
+            # Coincidencia exacta
+            if dominio_normalizado == oficial:
+                return True
+        
+            # Permitir subdominios legítimos (ej: login.viabcp.com)
+            if dominio_normalizado.endswith("." + oficial):
+                return True
+        
+        return False
+    
+    def es_dominio_sospechoso(self, dominio: str) -> bool:
+        """
+        Reglas:
+        Si el dominio contiene el nombre de un banco oficial pero no coincide exactamente con el dominio oficial → marcar como sospechoso.
+        
+        Ejemplo:
+        Oficial: viabcp.com
+        Sospechoso: viabcp-secure-login.com
+        """
+        dominio_normalizado = dominio.lower().strip()
+        
+        # Si es oficial, no es sospechoso
+        if self.es_dominio_financiero_oficial(dominio_normalizado):
+            return False
+        
+        # Verificar si contiene el nombre de algún banco oficial pero no es exacto
+        for oficial in self.dominios_financieros_peru:
+            # Extraer el nombre base del dominio oficial (sin .com, .pe, etc.)
+            nombre_base = oficial.split('.')[0]
+            
+            # Si el dominio contiene el nombre base pero no es exactamente el oficial
+            if nombre_base in dominio_normalizado:
+                return True
+        
+        return False
 
 if __name__ == "__main__":
 

@@ -1,4 +1,3 @@
-
 import re
 from urllib.parse import urlparse
 
@@ -59,5 +58,5 @@ def analizar_urls(texto: str):
         if es_url_acortada(url):
             resultado["urls_acortadas"].append(url)
 
-    return resultado﻿
+    return resultado
 
