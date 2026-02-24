@@ -1,5 +1,6 @@
 import re
 from urllib.parse import urlparse
+from utils.similitud import calcular_similitud, normalizar_dominio, extraer_nombre_base
 
 
 class URLValidator:
@@ -116,8 +117,10 @@ class FinancialDomainChecker:
         Ejemplo:
         Oficial: viabcp.com
         Sospechoso: viabcp-secure-login.com
+        
+        AGREGADO: También detecta por similitud (>80%)
         """
-        dominio_normalizado = dominio.lower().strip()
+        dominio_normalizado = normalizar_dominio(dominio)
         
         # Si es oficial, no es sospechoso
         if self.es_dominio_financiero_oficial(dominio_normalizado):
@@ -130,6 +133,12 @@ class FinancialDomainChecker:
             
             # Si el dominio contiene el nombre base pero no es exactamente el oficial
             if nombre_base in dominio_normalizado:
+                return True
+        
+        # AGREGADO: Detección por similitud (>80%)
+        for oficial in self.dominios_financieros_peru:
+            similitud = calcular_similitud(dominio_normalizado, oficial)
+            if similitud > 0.8:  # Umbral del 80%
                 return True
         
         return False
