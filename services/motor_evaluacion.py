@@ -24,11 +24,6 @@ class MotorEvaluacion:
         """
         Función principal que analiza un mensaje completo usando objetos modelo
         
-        Args:
-            mensaje (Mensaje): Objeto Mensaje a analizar
-            
-        Returns:
-            Analisis: Objeto con el resultado completo del análisis
         """
         # Crear objeto de análisis
         analisis = Analisis()
@@ -134,8 +129,6 @@ class MotorEvaluacion:
         +2 por URL inválida
         +2 por URL acortada
         
-        Returns:
-            Dict con urls, score_urls y elementos_urls
         """
         # Usar funciones del módulo detector_url
         urls = extraer_urls(texto)
@@ -187,8 +180,6 @@ class MotorEvaluacion:
         SCORE DOMINIO:
         +3 si imita dominio financiero oficial
         
-        Returns:
-            Dict con score_dominios y elementos_dominios
         """
         score_dominios = 0
         elementos_dominios = []

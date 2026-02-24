@@ -5,12 +5,7 @@ def calcular_similitud(texto1: str, texto2: str) -> float:
     """
     Calcula la similitud entre dos textos usando difflib.
     
-    Args:
-        texto1 (str): Primer texto
-        texto2 (str): Segundo texto
-        
-    Returns:
-        float: Valor entre 0.0 y 1.0 (0 = nada similar, 1 = idéntico)
+    float: Valor entre 0.0 y 1.0 (0 = nada similar, 1 = idéntico)
     """
     return difflib.SequenceMatcher(None, texto1.lower(), texto2.lower()).ratio()
 
@@ -18,13 +13,6 @@ def encontrar_similares(texto: str, lista_textos: List[str], umbral: float = 0.8
     """
     Encuentra textos similares en una lista.
     
-    Args:
-        texto (str): Texto base para comparar
-        lista_textos (List[str]): Lista de textos a comparar
-        umbral (float): Mínima similitud para considerar similar (default 0.8)
-        
-    Returns:
-        List[Tuple[str, float]]: Lista de tuplas (texto_similar, similitud)
     """
     similares = []
     
@@ -41,13 +29,8 @@ def es_similitud_alta(texto1: str, texto2: str, umbral: float = 0.8) -> bool:
     """
     Determina si dos textos tienen alta similitud.
     
-    Args:
-        texto1 (str): Primer texto
-        texto2 (str): Segundo texto
-        umbral (float): Umbral de similitud (default 0.8)
-        
-    Returns:
-        bool: True si la similitud es mayor o igual al umbral
+    umbral (float): Umbral de similitud (default 0.8)
+   
     """
     return calcular_similitud(texto1, texto2) >= umbral
 
@@ -55,11 +38,6 @@ def normalizar_dominio(dominio: str) -> str:
     """
     Normaliza un dominio para comparación.
     
-    Args:
-        dominio (str): Dominio a normalizar
-        
-    Returns:
-        str: Dominio normalizado (minúsculas, sin www, sin http)
     """
     # Eliminar protocolo
     if '://' in dominio:
@@ -79,11 +57,6 @@ def extraer_nombre_base(dominio: str) -> str:
     """
     Extrae el nombre base de un dominio (sin TLD).
     
-    Args:
-        dominio (str): Dominio completo
-        
-    Returns:
-        str: Nombre base del dominio
     """
     dominio_normalizado = normalizar_dominio(dominio)
     partes = dominio_normalizado.split('.')
