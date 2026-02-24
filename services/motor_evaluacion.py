@@ -1,6 +1,8 @@
 from services.detector_contenido import DetectorContenido
 from services.detector_dominio import URLAnalyzer, FinancialDomainChecker
 from services.detector_url import extraer_urls, es_url_valida, es_url_acortada
+from models.mensaje import Mensaje
+from models.analisis import Analisis
 from urllib.parse import urlparse
 
 class MotorEvaluacion:
@@ -18,52 +20,49 @@ class MotorEvaluacion:
             'sospechoso_max': 5
         }
     
-    def analizar_mensaje(self, texto):
+    def analizar_mensaje(self, mensaje: Mensaje) -> Analisis:
         """
-        Funcion principal que analiza un mensaje completo
+        Función principal que analiza un mensaje completo usando objetos modelo
         
+        Args:
+            mensaje (Mensaje): Objeto Mensaje a analizar
+            
         Returns:
-            Dict con:
-            - risk_level: str - 'Seguro', 'Sospechoso', 'Peligroso'
-            - detected_elements: List[Dict] - Elementos detectados con detalles
-            - score: int - Puntuación total
-            - links_detected: List[str] - URLs encontradas
+            Analisis: Objeto con el resultado completo del análisis
         """
+        # Crear objeto de análisis
+        analisis = Analisis()
+        
+        # Verificar si el mensaje está vacío
+        if mensaje.esta_vacio():
+            return analisis
+        
+        texto = mensaje.get_contenido()
+        
         # 1. Análisis de contenido
         resultado_contenido = self.detector_contenido.analizar(texto)
-        score = resultado_contenido['score_total']
+        analisis.detalle_contenido = resultado_contenido
+        analisis.score_total += resultado_contenido['score_total']
         
         # 2. Análisis de URLs
         resultado_urls = self._analizar_urls(texto)
-        score_urls = resultado_urls['score_urls']
-        score += score_urls
+        analisis.detalle_url = resultado_urls
+        analisis.score_total += resultado_urls['score_urls']
         
         # 3. Análisis de dominios
         resultado_dominios = self._analizar_dominios(resultado_urls['urls'])
-        score_dominios = resultado_dominios['score_dominios']
-        score += score_dominios
+        analisis.detalle_dominio = resultado_dominios
+        analisis.score_total += resultado_dominios['score_dominios']
         
         # 4. Determinar nivel de riesgo
-        risk_level = self._determinar_nivel_riesgo(score)
+        analisis.nivel_riesgo = self._determinar_nivel_riesgo(analisis.score_total)
         
-        # 5. Formatear elementos detectados
-        detected_elements = self._formatear_elementos(
-            resultado_contenido['elementos_detectados']
-        )
+        # 5. Agregar todos los factores detectados
+        analisis.factores_detectados.extend(resultado_contenido['elementos_detectados'])
+        analisis.factores_detectados.extend(resultado_urls['elementos_urls'])
+        analisis.factores_detectados.extend(resultado_dominios['elementos_dominios'])
         
-        # 6. Agregar elementos de URLs y dominios
-        detected_elements.extend(resultado_urls['elementos_urls'])
-        detected_elements.extend(resultado_dominios['elementos_dominios'])
-        
-        # 7. URLs detectadas para el campo links_detected
-        links_detected = resultado_urls['urls']
-        
-        return {
-            'risk_level': risk_level,
-            'detected_elements': detected_elements,
-            'score': score,
-            'links_detected': links_detected
-        }
+        return analisis
     
     def _determinar_nivel_riesgo(self, score):
         """
