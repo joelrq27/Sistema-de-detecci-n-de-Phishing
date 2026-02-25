@@ -118,7 +118,7 @@ class FinancialDomainChecker:
         Oficial: viabcp.com
         Sospechoso: viabcp-secure-login.com
         
-        AGREGADO: También detecta por similitud (>80%)
+        También detecta por similitud (>80%)
         """
         dominio_normalizado = normalizar_dominio(dominio)
         
@@ -135,7 +135,7 @@ class FinancialDomainChecker:
             if nombre_base in dominio_normalizado:
                 return True
         
-        # AGREGADO: Detección por similitud (>80%)
+        # Detección por similitud (>80%)
         for oficial in self.dominios_financieros_peru:
             similitud = calcular_similitud(dominio_normalizado, oficial)
             if similitud > 0.8:  # Umbral del 80%

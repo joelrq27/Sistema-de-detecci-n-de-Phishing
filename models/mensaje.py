@@ -8,8 +8,6 @@ class Mensaje:
         """
         Inicializa el mensaje con su contenido.
         
-        Args:
-            contenido (str): El texto del mensaje a analizar
         """
         self.contenido = contenido if contenido else ""
     
@@ -17,8 +15,6 @@ class Mensaje:
         """
         Retorna el contenido del mensaje.
         
-        Returns:
-            str: El texto del mensaje
         """
         return self.contenido
     
@@ -26,8 +22,6 @@ class Mensaje:
         """
         Indica si el mensaje está vacío o solo contiene espacios en blanco.
         
-        Returns:
-            bool: True si está vacío, False si tiene contenido
         """
         return not self.contenido.strip()
     
@@ -35,8 +29,6 @@ class Mensaje:
         """
         Representación en cadena del objeto.
         
-        Returns:
-            str: Representación del mensaje
         """
         if self.esta_vacio():
             return "Mensaje(vacío)"
