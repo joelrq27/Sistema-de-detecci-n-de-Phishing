@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template, redirect, url_for
 from models.mensaje import Mensaje
 from services.motor_evaluacion import MotorEvaluacion
 
@@ -7,18 +7,28 @@ app = Flask(__name__)
 @app.route('/')
 def index():
     """
-    Endpoint principal para información del API.
+    Página principal con formulario de análisis.
     """
-    return jsonify({
-        'mensaje': 'API de Detección de Phishing',
-        'version': '1.0.0',
-        'endpoints': {
-            'POST /analizar': 'Analiza un mensaje para detectar phishing'
-        }
-    })
+    return render_template('index.html')
 
-@app.route('/analizar', methods=['POST'])
-def analizar():
+@app.route('/resultado')
+def resultado():
+    """
+    Página de resultados del análisis.
+    """
+    resultado_str = request.args.get('resultado')
+    if not resultado_str:
+        return redirect(url_for('index'))
+    
+    try:
+        import json
+        resultado = json.loads(resultado_str)
+        return render_template('resultado.html', resultado=resultado)
+    except json.JSONDecodeError:
+        return redirect(url_for('index'))
+
+@app.route('/api/analizar', methods=['POST'])
+def api_analizar():
     """
     Endpoint para analizar mensajes de phishing.
     """
@@ -66,6 +76,33 @@ def analizar():
             'error': f'Error interno del servidor: {str(e)}',
             'codigo': 500
         }), 500
+
+@app.route('/analizar', methods=['POST'])
+def analizar():
+    """
+    Endpoint para análisis desde formulario web.
+    """
+    try:
+        # Obtener mensaje del formulario
+        mensaje_texto = request.form.get('mensaje', '')
+        
+        if not mensaje_texto or not mensaje_texto.strip():
+            return render_template('index.html', error='El mensaje no puede estar vacío')
+        
+        # Crear objeto Mensaje
+        mensaje = Mensaje(mensaje_texto)
+        
+        # Crear instancia de MotorEvaluacion y analizar
+        motor = MotorEvaluacion()
+        resultado_analisis = motor.analizar_mensaje(mensaje)
+        
+        # Redirigir a página de resultados
+        import json
+        resultado_str = json.dumps(resultado_analisis.to_dict())
+        return redirect(url_for('resultado', resultado=resultado_str))
+        
+    except Exception as e:
+        return render_template('index.html', error=f'Error al analizar: {str(e)}')
 
 @app.errorhandler(404)
 def not_found(error):

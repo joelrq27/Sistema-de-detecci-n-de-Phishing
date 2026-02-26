@@ -52,10 +52,14 @@ class MotorEvaluacion:
         # 4. Determinar nivel de riesgo
         analisis.nivel_riesgo = self._determinar_nivel_riesgo(analisis.score_total)
         
-        # 5. Agregar todos los factores detectados
-        analisis.factores_detectados.extend(resultado_contenido['elementos_detectados'])
-        analisis.factores_detectados.extend(resultado_urls['elementos_urls'])
-        analisis.factores_detectados.extend(resultado_dominios['elementos_dominios'])
+        # 5. Formatear y agregar todos los factores detectados
+        elementos_contenido_formateados = self._formatear_elementos(resultado_contenido['elementos_detectados'])
+        elementos_urls_formateados = self._formatear_elementos(resultado_urls['elementos_urls'])
+        elementos_dominios_formateados = self._formatear_elementos(resultado_dominios['elementos_dominios'])
+        
+        analisis.factores_detectados.extend(elementos_contenido_formateados)
+        analisis.factores_detectados.extend(elementos_urls_formateados)
+        analisis.factores_detectados.extend(elementos_dominios_formateados)
         
         return analisis
     
@@ -77,12 +81,27 @@ class MotorEvaluacion:
         elementos_formateados = []
         
         for elemento in elementos:
-            elementos_formateados.append({
-                'tipo': elemento['categoria'],
-                'elemento': elemento['elemento'],
-                'peso': elemento['peso'],
-                'descripcion': self._generar_descripcion(elemento)
-            })
+            # Verificar si ya tiene la estructura correcta (URLs y dominios)
+            if 'tipo' in elemento and 'elemento' in elemento and 'peso' in elemento and 'descripcion' in elemento:
+                # Ya está formateado, agregar explicación detallada
+                elemento_formateado = {
+                    'tipo': elemento['tipo'],
+                    'elemento': elemento['elemento'],
+                    'peso': elemento['peso'],
+                    'descripcion': elemento['descripcion'],
+                    'explicacion': self._generar_explicacion(elemento)
+                }
+                elementos_formateados.append(elemento_formateado)
+            else:
+                # Viene del detector_contenido, necesita formateo
+                elemento_formateado = {
+                    'tipo': elemento['categoria'],
+                    'elemento': elemento['elemento'],
+                    'peso': elemento['peso'],
+                    'descripcion': self._generar_descripcion(elemento),
+                    'explicacion': self._generar_explicacion(elemento)
+                }
+                elementos_formateados.append(elemento_formateado)
         
         return elementos_formateados
     
@@ -106,6 +125,28 @@ class MotorEvaluacion:
         return descripciones.get(
             categoria,
             f"Elemento sospechoso: '{elemento_texto}'"
+        )
+    
+    def _generar_explicacion(self, elemento):
+        """
+        Genera una explicación detallada para cada elemento detectado
+        """
+        categoria = elemento.get('categoria', elemento.get('tipo', ''))
+        elemento_texto = elemento.get('elemento', '')
+        
+        explicaciones = {
+            'urgencia': f"Se detectó la palabra '{elemento_texto.upper()}' que los phishers usan para presionarte a actuar sin pensar.",
+            'accion_obligatoria': f"El mensaje usa '{elemento_texto}' para forzarte a realizar una acción inmediata, una táctica común de phishing.",
+            'incentivo': f"Se ofrece '{elemento_texto}' como incentivo para que bajes la guardia y compartas información.",
+            'amenaza': f"El mensaje menciona '{elemento_texto}', una táctica de intimidación para generar miedo y urgencia.",
+            'formato': f"Se detectó un problema de formato: '{elemento_texto}', común en correos fraudulentos.",
+            'url': f"El mensaje contiene enlaces que podrían llevar a sitios maliciosos.",
+            'dominio': f"Se detectó un dominio sospechoso que intenta imitar una entidad legítima."
+        }
+        
+        return explicaciones.get(
+            categoria,
+            f"Se detectó un elemento sospechoso: '{elemento_texto}' que requiere atención."
         )
     
     def obtener_resumen_categorias(self, elementos):
@@ -134,6 +175,7 @@ class MotorEvaluacion:
         urls = extraer_urls(texto)
         score_urls = 0
         elementos_urls = []
+        detalles_urls = []
         
         # +1 si hay al menos 1 URL
         if len(urls) > 0:
@@ -142,7 +184,12 @@ class MotorEvaluacion:
                 'tipo': 'url',
                 'elemento': 'presencia_urls',
                 'peso': 1,
-                'descripcion': f'Se detectaron {len(urls)} URLs en el mensaje'
+                'descripcion': f'Se detectaron {len(urls)} URLs en el mensaje',
+                'detalles': {
+                    'tipo_detalle': 'presencia',
+                    'valor': f'{len(urls)} URLs',
+                    'texto': f'Presencia de {len(urls)} URL(s) en el mensaje'
+                }
             })
         
         # +2 por cada URL inválida
@@ -153,7 +200,17 @@ class MotorEvaluacion:
                     'tipo': 'url',
                     'elemento': 'url_invalida',
                     'peso': 2,
-                    'descripcion': f'URL inválida detectada: {url}'
+                    'descripcion': f'URL inválida detectada: {url}',
+                    'detalles': {
+                        'tipo_detalle': 'invalida',
+                        'valor': url,
+                        'texto': f'URL inválida: {url}'
+                    }
+                })
+                detalles_urls.append({
+                    'tipo': 'invalida',
+                    'url': url,
+                    'peso': 2
                 })
         
         # +2 por cada URL acortada
@@ -164,13 +221,24 @@ class MotorEvaluacion:
                     'tipo': 'url',
                     'elemento': 'url_acortada',
                     'peso': 2,
-                    'descripcion': f'URL acortada sospechosa: {url}'
+                    'descripcion': f'URL acortada sospechosa: {url}',
+                    'detalles': {
+                        'tipo_detalle': 'acortada',
+                        'valor': url,
+                        'texto': f'URL acortada: {url}'
+                    }
+                })
+                detalles_urls.append({
+                    'tipo': 'acortada',
+                    'url': url,
+                    'peso': 2
                 })
         
         return {
             'urls': urls,
             'score_urls': score_urls,
-            'elementos_urls': elementos_urls
+            'elementos_urls': elementos_urls,
+            'detalles_urls': detalles_urls
         }
     
     def _analizar_dominios(self, urls):
@@ -183,6 +251,7 @@ class MotorEvaluacion:
         """
         score_dominios = 0
         elementos_dominios = []
+        detalles_dominios = []
         
         for url in urls:
             try:
@@ -199,7 +268,17 @@ class MotorEvaluacion:
                         'tipo': 'dominio',
                         'elemento': 'dominio_sospechoso',
                         'peso': 3,
-                        'descripcion': f'Dominio sospechoso que imita entidad financiera: {dominio}'
+                        'descripcion': f'Dominio sospechoso que imita entidad financiera: {dominio}',
+                        'detalles': {
+                            'tipo_detalle': 'sospechoso',
+                            'valor': dominio,
+                            'texto': f'Dominio sospechoso: {dominio}'
+                        }
+                    })
+                    detalles_dominios.append({
+                        'tipo': 'sospechoso',
+                        'dominio': dominio,
+                        'peso': 3
                     })
                 
                 # Nota: dominios financieros oficiales no suman puntos (0 puntos)
@@ -210,5 +289,6 @@ class MotorEvaluacion:
         
         return {
             'score_dominios': score_dominios,
-            'elementos_dominios': elementos_dominios
+            'elementos_dominios': elementos_dominios,
+            'detalles_dominios': detalles_dominios
         }
