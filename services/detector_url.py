@@ -11,22 +11,31 @@ def extraer_urls(texto: str):
     Extrae todas las URLs del texto usando expresiones regulares.
     Retorna una lista de URLs encontradas.
     """
-    # Detectar URLs con protocolo (http://, https://)
-    patron_con_protocolo = r'https?://[^\s]+'
+    # Patrón unificado para detectar todos los tipos de URLs sin duplicados
+    # Detecta: http://dominio.com, https://dominio.com, bit.ly/xyz, www.ejemplo.com, ejemplo.com/ruta
+    patron_unificado = r'\b(?:https?://)?(?:www\.)?[a-zA-Z0-9-]+\.[a-zA-Z]{2,}(?:/[^\s]*)?(?<!://)'
     
-    # Detectar URLs sin protocolo pero con estructura válida
-    # Incluye: bit.ly/xyz, www.ejemplo.com, ejemplo.com/ruta
-    patron_sin_protocolo = r'\b(?:www\.)?[a-zA-Z0-9-]+\.[a-zA-Z]{2,}(?:/[^\s]*)?'
-    
-    # Detectar protocolos incompletos como http:// sin dominio
+    # Detectar protocolos incompletos (http:// sin dominio)
     patron_incompleto = r'https?://(?=\s|$)'
     
-    urls_con_protocolo = re.findall(patron_con_protocolo, texto)
-    urls_sin_protocolo = re.findall(patron_sin_protocolo, texto)
+    urls_completas = re.findall(patron_unificado, texto)
     urls_incompletas = re.findall(patron_incompleto, texto)
     
-    # Combinar resultados y eliminar duplicados
-    todas_urls = list(set(urls_con_protocolo + urls_sin_protocolo + urls_incompletas))
+    # Combinar resultados eliminando duplicados manteniendo el orden
+    todas_urls = []
+    seen = set()
+    
+    # Agregar URLs incompletas primero
+    for url in urls_incompletas:
+        if url not in seen:
+            seen.add(url)
+            todas_urls.append(url)
+    
+    # Agregar URLs completas
+    for url in urls_completas:
+        if url not in seen:
+            seen.add(url)
+            todas_urls.append(url)
     
     # Normalizar URLs sin protocolo agregando http://
     urls_normalizadas = []

@@ -596,7 +596,23 @@
             // Obtener detalles de URLs del resultado
             const detallesUrls = resultado.detalle_url?.detalles_urls || [];
             const urlsInvalidas = detallesUrls.filter(d => d.tipo === 'invalida');
+            const urlsInseguras = detallesUrls.filter(d => d.tipo === 'protocolo_inseguro');
             const urlsAcortadas = detallesUrls.filter(d => d.tipo === 'acortada');
+            
+            // Mostrar URLs con protocolo inseguro
+            if (urlsInseguras.length > 0) {
+                urlsInseguras.forEach(detalle => {
+                    html += `
+                        <div class="factor-item">
+                            <div class="factor-header">
+                                <div class="factor-text">Protocolo HTTP inseguro: ${detalle.url}</div>
+                                <div class="factor-weight">+${detalle.peso}</div>
+                            </div>
+                            <div class="factor-description">URL que usa protocolo HTTP sin cifrado, vulnerable a interceptación de datos</div>
+                        </div>
+                    `;
+                });
+            }
             
             // Mostrar URLs inválidas
             if (urlsInvalidas.length > 0) {
@@ -604,10 +620,10 @@
                     html += `
                         <div class="factor-item">
                             <div class="factor-header">
-                                <div class="factor-text">URL inválida: ${detalle.url}</div>
+                                <div class="factor-text">URL con estructura inválida: ${detalle.url}</div>
                                 <div class="factor-weight">+${detalle.peso}</div>
                             </div>
-                            <div class="factor-description">URL con estructura inválida que podría llevar a sitios maliciosos</div>
+                            <div class="factor-description">URL con formato incorrecto que podría llevar a sitios maliciosos</div>
                         </div>
                     `;
                 });

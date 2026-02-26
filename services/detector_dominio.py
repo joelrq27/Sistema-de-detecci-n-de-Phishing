@@ -79,69 +79,86 @@ class FinancialDomainChecker:
             "pichincha.pe",
             "yape.com.pe",
             "prima.com.pe",
-            "afpintegra.pe",
-            "bvl.com.pe",
-            "cavali.com.pe",
-            "cencosudscotia.com.pe"
         ]
-
-    def convertir_a_urls(self):
-        """
-        Convierte los dominios a URLs HTTPS.
-        """
-        return "\n".join([f"https://{dominio}" for dominio in self.dominios_financieros_peru])
+        
+        # Lista de marcas populares comúnmente usadas en phishing
+        self.marcas_populares = [
+            "netflix.com", "amazon.com", "facebook.com", "instagram.com", 
+            "twitter.com", "x.com", "whatsapp.com", "gmail.com", "outlook.com",
+            "hotmail.com", "yahoo.com", "microsoft.com", "apple.com", 
+            "google.com", "youtube.com", "tiktok.com", "linkedin.com",
+            "paypal.com", "ebay.com", "mercadolibre.com", "mercado libre"
+        ]
     
     def es_dominio_financiero_oficial(self, dominio: str) -> bool:
         """
-         Devuelve True si el dominio coincide exactamente
-         o es un subdominio legítimo de un dominio financiero oficial.
+        Verifica si el dominio es un dominio financiero oficial.
         """
-        dominio_normalizado = dominio.lower().strip()
-
+        dominio_normalizado = normalizar_dominio(dominio)
+        
         for oficial in self.dominios_financieros_peru:
-            # Coincidencia exacta
-            if dominio_normalizado == oficial:
+            if dominio_normalizado == normalizar_dominio(oficial):
                 return True
+        return False
+    
+    def es_marca_oficial(self, dominio: str) -> bool:
+        """
+        Verifica si el dominio es un dominio oficial de una marca popular.
+        """
+        dominio_normalizado = normalizar_dominio(dominio)
         
-            # Permitir subdominios legítimos (ej: login.viabcp.com)
-            if dominio_normalizado.endswith("." + oficial):
+        for marca in self.marcas_populares:
+            if dominio_normalizado == normalizar_dominio(marca):
                 return True
-        
         return False
     
     def es_dominio_sospechoso(self, dominio: str) -> bool:
         """
         Reglas:
-        Si el dominio contiene el nombre de un banco oficial pero no coincide exactamente con el dominio oficial → marcar como sospechoso.
+        1. Si el dominio contiene el nombre de un banco oficial pero no coincide exactamente → marcar como sospechoso.
+        2. Si el dominio contiene el nombre de una marca popular pero no es el dominio oficial → marcar como sospechoso.
         
-        Ejemplo:
-        Oficial: viabcp.com
-        Sospechoso: viabcp-secure-login.com
+        Ejemplos:
+        - Oficial: viabcp.com → Sospechoso: viabcp-secure-login.com
+        - Oficial: netflix.com → Sospechoso: netflix-verificacion.com
         
         También detecta por similitud (>80%)
         """
         dominio_normalizado = normalizar_dominio(dominio)
         
-        # Si es oficial, no es sospechoso
+        # Si es oficial (financiero o marca), no es sospechoso
         if self.es_dominio_financiero_oficial(dominio_normalizado):
             return False
         
-        # Verificar si contiene el nombre de algún banco oficial pero no es exacto
+        if self.es_marca_oficial(dominio_normalizado):
+            return False
+        
+        # Verificar dominios financieros sospechosos
         for oficial in self.dominios_financieros_peru:
-            # Extraer el nombre base del dominio oficial (sin .com, .pe, etc.)
             nombre_base = oficial.split('.')[0]
-            
-            # Si el dominio contiene el nombre base pero no es exactamente el oficial
             if nombre_base in dominio_normalizado:
                 return True
         
-        # Detección por similitud (>80%)
+        # Verificar marcas populares sospechosas
+        for marca in self.marcas_populares:
+            nombre_base = marca.split('.')[0]
+            if nombre_base in dominio_normalizado:
+                return True
+        
+        # Detección por similitud (>80%) para financieros
         for oficial in self.dominios_financieros_peru:
-            similitud = calcular_similitud(dominio_normalizado, oficial)
-            if similitud > 0.8:  # Umbral del 80%
+            similitud = calcular_similitud(dominio_normalizado, normalizar_dominio(oficial))
+            if similitud > 0.8:
+                return True
+        
+        # Detección por similitud (>80%) para marcas populares
+        for marca in self.marcas_populares:
+            similitud = calcular_similitud(dominio_normalizado, normalizar_dominio(marca))
+            if similitud > 0.8:
                 return True
         
         return False
+
 
 if __name__ == "__main__":
 

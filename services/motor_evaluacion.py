@@ -192,23 +192,52 @@ class MotorEvaluacion:
                 }
             })
         
-        # +2 por cada URL inválida
+        # +2 por cada URL inválida o con protocolo inseguro
         for url in urls:
-            if not es_url_valida(url):
+            # Determinar el tipo de problema
+            if url.startswith('http://') and not url.startswith('https://'):
+                # Protocolo HTTP inseguro
                 score_urls += 2
+                tipo_problema = 'protocolo_inseguro'
+                descripcion = f'URL con protocolo HTTP inseguro: {url}'
+                texto_detalle = f'Protocolo HTTP inseguro: {url}'
+                
+                elementos_urls.append({
+                    'tipo': 'url',
+                    'elemento': 'url_insegura',
+                    'peso': 2,
+                    'descripcion': descripcion,
+                    'detalles': {
+                        'tipo_detalle': tipo_problema,
+                        'valor': url,
+                        'texto': texto_detalle
+                    }
+                })
+                detalles_urls.append({
+                    'tipo': tipo_problema,
+                    'url': url,
+                    'peso': 2
+                })
+            elif not es_url_valida(url):
+                # URL inválida
+                score_urls += 2
+                tipo_problema = 'invalida'
+                descripcion = f'URL con estructura inválida: {url}'
+                texto_detalle = f'URL inválida: {url}'
+                
                 elementos_urls.append({
                     'tipo': 'url',
                     'elemento': 'url_invalida',
                     'peso': 2,
-                    'descripcion': f'URL inválida detectada: {url}',
+                    'descripcion': descripcion,
                     'detalles': {
-                        'tipo_detalle': 'invalida',
+                        'tipo_detalle': tipo_problema,
                         'valor': url,
-                        'texto': f'URL inválida: {url}'
+                        'texto': texto_detalle
                     }
                 })
                 detalles_urls.append({
-                    'tipo': 'invalida',
+                    'tipo': tipo_problema,
                     'url': url,
                     'peso': 2
                 })
