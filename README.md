@@ -45,8 +45,6 @@ Herramienta de análisis especializada en la detección de mensajes de phishing 
    
    Abre tu navegador y navega a `http://127.0.0.1:5000`
 
-## Guía de Uso
-
 ### Análisis Básico
 1. Ingresa el mensaje sospechoso en el campo de texto
 2. Haz clic en "Analizar Mensaje"
@@ -83,7 +81,7 @@ phishing-detector/
     └── resultado.html              # Página de resultados
 ```
 
-## 🔧 Configuración
+##  Configuración
 
 La aplicación se ejecuta por defecto en:
 - **Puerto**: 5000
@@ -100,11 +98,7 @@ El sistema evalúa múltiples factores:
 | URLs | Protocolo inseguro, acortadas, inválidas | +2 cada una |
 | Dominios | Imitación de marcas, similitud >80% | +3 cada uno |
 
-## 📝 Licencia
-
-Este proyecto está bajo la Licencia MIT. Consulta el archivo `LICENSE` para más detalles.
-
-## 👥 Autores
+##  Autores
 
 - 
 -
