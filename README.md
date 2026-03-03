@@ -75,7 +75,7 @@ El sistema inteligentemente reduce falsos positivos mediante análisis contextua
 - Mensaje con solo una URL normal → No sube demasiado el score
 - Mensaje con urgencia + URL + dominio sospechoso → Score máximo (combinación peligrosa)
 
-## 📁 Estructura del Proyecto
+##  Estructura del Proyecto
 
 ```
 phishing-detector/
@@ -111,12 +111,6 @@ El sistema evalúa múltiples factores:
 | Contenido | Urgencia, acciones, incentivos | Variable |
 | URLs | Protocolo inseguro, acortadas, inválidas | +2 cada una |
 | Dominios | Imitación de marcas, similitud >80% | +3 cada uno |
-
-##  Autores
-
-- 
--
--
 
 ---
 
