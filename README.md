@@ -45,6 +45,8 @@ Herramienta de análisis especializada en la detección de mensajes de phishing 
    
    Abre tu navegador y navega a `http://127.0.0.1:5000`
 
+## Guía de Uso
+
 ### Análisis Básico
 1. Ingresa el mensaje sospechoso en el campo de texto
 2. Haz clic en "Analizar Mensaje"
@@ -106,4 +108,4 @@ El sistema evalúa múltiples factores:
 
 ---
 
-**Nota**: Esta herramienta es una ayuda en la detección de phishing, no reemplaza el juicio humano. Siempre verifica la autenticidad de mensajes sospechosos por canales oficiales.
+**Nota**: Esta herramienta es una ayuda en la detección de phishing, no reemplaza el juicio humano.
