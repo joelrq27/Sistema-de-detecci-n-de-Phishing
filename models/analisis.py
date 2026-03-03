@@ -19,8 +19,6 @@ class Analisis:
         """
         Convierte el objeto a diccionario para fácil serialización.
         
-        Returns:
-            dict: Representación completa del análisis
         """
         return {
             'score_total': self.score_total,
@@ -35,8 +33,6 @@ class Analisis:
         """
         Representación en cadena para debugging.
         
-        Returns:
-            str: Resumen del análisis
         """
         total_factores = len(self.factores_detectados)
         contenido_activado = "Sí" if self.detalle_contenido else "No"
