@@ -49,10 +49,18 @@ class MotorEvaluacion:
         analisis.detalle_dominio = resultado_dominios
         analisis.score_total += resultado_dominios['score_dominios']
         
-        # 4. Determinar nivel de riesgo
+        # 4. Aplicar penalización contextual para reducir falsos positivos
+        analisis.score_total = self._aplicar_penalizacion_contextual(
+            analisis.score_total,
+            resultado_contenido['score_total'],
+            resultado_urls['score_urls'],
+            resultado_dominios['score_dominios']
+        )
+        
+        # 5. Determinar nivel de riesgo
         analisis.nivel_riesgo = self._determinar_nivel_riesgo(analisis.score_total)
         
-        # 5. Formatear y agregar todos los factores detectados
+        # 6. Formatear y agregar todos los factores detectados
         elementos_contenido_formateados = self._formatear_elementos(resultado_contenido['elementos_detectados'])
         elementos_urls_formateados = self._formatear_elementos(resultado_urls['elementos_urls'])
         elementos_dominios_formateados = self._formatear_elementos(resultado_dominios['elementos_dominios'])
@@ -73,6 +81,38 @@ class MotorEvaluacion:
             return 'Sospechoso'
         else:
             return 'Peligroso'
+    
+    def _aplicar_penalizacion_contextual(self, score_total, score_contenido, score_urls, score_dominios):
+        """
+        Aplica penalización contextual para reducir falsos positivos.
+        
+        Lógica:
+        - Si solo 1 categoría está activada → reducir 1 punto
+        - Si 2 o más categorías están activadas → mantener score normal
+        
+        Esto evita que mensajes con una sola señal (ej: solo mayúsculas o solo una URL)
+        sean clasificados como sospechosos automáticamente.
+        """
+        # Contar cuántas categorías tienen puntos > 0
+        categorias_activadas = 0
+        
+        if score_contenido > 0:
+            categorias_activadas += 1
+        
+        if score_urls > 0:
+            categorias_activadas += 1
+            
+        if score_dominios > 0:
+            categorias_activadas += 1
+        
+        # Aplicar penalización si solo hay una categoría activada
+        if categorias_activadas == 1:
+            # Reducir 1 punto pero nunca dejar el score negativo
+            score_ajustado = max(score_total - 1, 0)
+            return score_ajustado
+        
+        # Si hay 2 o más categorías activadas, mantener el score original
+        return score_total
     
     def _formatear_elementos(self, elementos):
         """

@@ -7,7 +7,7 @@ Herramienta de análisis especializada en la detección de mensajes de phishing 
 - **Análisis de Contenido**: Detección de palabras de urgencia, acciones obligatorias e incentivos sospechosos
 - **Análisis de URLs**: Identificación de protocolos inseguros, URLs acortadas y estructuras inválidas
 - **Análisis de Dominios**: Detección de dominios que imitan marcas conocidas (bancos, Netflix, Amazon, etc.)
-- **Sistema de Puntuación**: Score con clasificación por niveles de riesgo (0-2 Seguro, 3-5 Sospechoso, 6+ Peligroso)
+- **Sistema de Puntuación**: Score con clasificación por niveles de riesgo (0-2 Seguro, 3-5 Sospechoso, 6+ Peligroso) y penalización contextual para reducir falsos positivos
 - **Interfaz Web**: Panel de control intuitivo con visualización detallada de amenazas
 
 ##  Tecnologías Utilizadas
@@ -62,6 +62,18 @@ Herramienta de análisis especializada en la detección de mensajes de phishing 
 - **Contenido**: Palabras de urgencia, acciones obligatorias, incentivos
 - **URLs**: Protocolos inseguros (HTTP), URLs acortadas, estructuras inválidas
 - **Dominios**: Imitación de marcas conocidas, similitud con dominios oficiales
+
+### 🧠 Penalización Contextual (Reducción de Falsos Positivos)
+
+El sistema inteligentemente reduce falsos positivos mediante análisis contextual:
+
+- **Si solo 1 categoría está activada** → Reduce 1 punto del score total
+- **Si 2 o más categorías están activadas** → Mantiene el score original
+
+**Ejemplos:**
+- Mensaje con solo mayúsculas → No se clasifica automáticamente como sospechoso
+- Mensaje con solo una URL normal → No sube demasiado el score
+- Mensaje con urgencia + URL + dominio sospechoso → Score máximo (combinación peligrosa)
 
 ## 📁 Estructura del Proyecto
 
