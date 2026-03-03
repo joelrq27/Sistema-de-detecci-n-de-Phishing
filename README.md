@@ -63,7 +63,7 @@ Herramienta de análisis especializada en la detección de mensajes de phishing 
 - **URLs**: Protocolos inseguros (HTTP), URLs acortadas, estructuras inválidas
 - **Dominios**: Imitación de marcas conocidas, similitud con dominios oficiales
 
-### 🧠 Penalización Contextual (Reducción de Falsos Positivos)
+### Penalización Contextual (Reducción de Falsos Positivos)
 
 El sistema inteligentemente reduce falsos positivos mediante análisis contextual:
 
@@ -102,7 +102,7 @@ La aplicación se ejecuta por defecto en:
 - **Host**: 127.0.0.1 (localhost)
 - **Modo Debug**: Activado para desarrollo
 
-## 📊 Métricas de Detección
+##  Métricas de Detección
 
 El sistema evalúa múltiples factores:
 
